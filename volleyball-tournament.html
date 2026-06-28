@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Court Control — Volleyball Tournament</title>
+<link rel="stylesheet" href="src/style.css">
+<!-- Optional: enables native .xlsx template/import when online. Everything still works offline (CSV). -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body class="vbt">
+<div id="app"></div>
+
+<!-- Load order matters: each file can only call things from files above it -->
+<script src="src/logic.js"></script>
+<script src="src/state.js"></script>
+<script src="src/helpers.js"></script>
+<script src="src/actions.js"></script>
+<script src="src/views/overview.js"></script>
+<script src="src/views/setup.js"></script>
+<script src="src/views/teams.js"></script>
+<script src="src/views/matches.js"></script>
+<script src="src/views/standings.js"></script>
+<script src="src/views/day2.js"></script>
+<script src="src/viewer.js"></script>
+<script src="src/app.js"></script>
+<script>init();</script>
+</body>
+</html>
