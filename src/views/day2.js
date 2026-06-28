@@ -4,7 +4,7 @@ function vDay2() {
   const tokenSlot = (token, win) => {
     if (token == null) return `<span class="bk-tbd">TBD</span>`;
     if (token.bye)     return `<span class="bk-bye">BYE</span>`;
-    return `<span class="bk-team ${win ? "win" : ""}"><span class="bk-seed num">${token.seed}</span>${esc(tn[token.id] || "—")}${win ? ic("crown", 13, "var(--teal)") : ""}</span>`;
+    return `<span class="bk-team ${win ? "win" : ""}"><span class="bk-seed num">${token.seed}</span><span class="bk-tname">${esc(tn[token.id] || "—")}</span>${win ? ic("crown", 13, "var(--teal)") : ""}</span>`;
   };
 
   if (S.teams.length < 2) {
@@ -78,28 +78,59 @@ function vDay2() {
       const bWin = r.done && r.winnerSide === "b";
       const court = (m.pos % C) + 1;
 
-      let action;
-      if (r.auto)       action = `<span class="pill pill-grey">bye</span>`;
-      else if (!r.ready) action = `<span class="bk-waiting">waiting</span>`;
-      else if (r.done)   action = `<button class="btn btn-sm" data-act="editD2" data-id="${m.id}">${ic("pencil", 12)} Edit</button>`;
-      else               action = `<div class="flex ac gap8">
-        <input class="score-in num" style="width:44px" inputmode="numeric" data-d2="a" data-id="${m.id}" placeholder="0" value="${esc(d.a == null ? "" : d.a)}">
-        <span class="score-dash">–</span>
-        <input class="score-in num" style="width:44px" inputmode="numeric" data-d2="b" data-id="${m.id}" placeholder="0" value="${esc(d.b == null ? "" : d.b)}">
-        <button class="btn btn-accent btn-sm" data-act="saveD2" data-id="${m.id}">${ic("check", 13)}</button>
-      </div>`;
+      // Side panel: scores/inputs stacked vertically + full-height button
+      let rowBadgeB = "", sidePanel = "";
+      if (r.auto) {
+        rowBadgeB = `<span class="pill pill-grey" style="flex-shrink:0;font-size:11px">bye</span>`;
+      } else if (!r.ready) {
+        rowBadgeB = `<span class="bk-waiting">waiting</span>`;
+      } else if (r.done) {
+        sidePanel = `
+          <div class="bk-side">
+            <div class="bk-side-scores">
+              <span class="bk-side-sc num ${aWin ? "win" : ""}">${r.sa}</span>
+              <span class="bk-side-sc num ${bWin ? "win" : ""}">${r.sb}</span>
+            </div>
+            <button class="btn btn-sm bk-side-btn" data-act="editD2" data-id="${m.id}">${ic("pencil", 12)}</button>
+          </div>`;
+      } else {
+        sidePanel = `
+          <div class="bk-side">
+            <div class="bk-side-inputs">
+              <input class="score-in num" style="width:44px" inputmode="numeric" data-d2="a" data-id="${m.id}" placeholder="0" value="${esc(d.a == null ? "" : d.a)}">
+              <input class="score-in num" style="width:44px" inputmode="numeric" data-d2="b" data-id="${m.id}" placeholder="0" value="${esc(d.b == null ? "" : d.b)}">
+            </div>
+            <button class="btn btn-accent bk-side-btn" data-act="saveD2" data-id="${m.id}">${ic("check", 15)}</button>
+          </div>`;
+      }
 
-      const sa = r.done && !r.auto ? `<span class="bk-score num">${r.sa}</span>` : "";
-      const sb = r.done && !r.auto ? `<span class="bk-score num">${r.sb}</span>` : "";
+      // Referee row
+      const tAId = r.teamA && !r.teamA.bye ? r.teamA.id : null;
+      const tBId = r.teamB && !r.teamB.bye ? r.teamB.id : null;
+      const assignedD2Ref  = S.d2Refs[m.id];
+      const eligibleD2Refs = S.referees.filter(rf =>
+        (!tAId || rf.teamId !== tAId) && (!tBId || rf.teamId !== tBId)
+      );
+      const refRow = S.referees.length ? `
+        <div class="bk-ref">
+          <span class="bk-ref-lbl">Ref</span>
+          ${r.done
+            ? `<span class="bk-ref-name">${assignedD2Ref ? esc((S.referees.find(rf => rf.id === assignedD2Ref) || {}).name || "—") : "—"}</span>`
+            : `<select class="inp" style="padding:3px 7px;height:auto;font-size:12px;flex:1" data-ref="day2" data-id="${m.id}">
+                 <option value="">— No referee —</option>
+                 ${eligibleD2Refs.map(rf => `<option value="${rf.id}" ${assignedD2Ref === rf.id ? "selected" : ""}>${esc(rf.name)}</option>`).join("")}
+               </select>`}
+        </div>` : "";
 
       return `
         <div class="bk-match ${r.done ? "done" : ""} ${r.auto ? "auto" : ""}">
           <span class="bk-court pill pill-grey">Ct ${court}</span>
           <div class="bk-rows">
-            <div class="bk-row">${tokenSlot(r.teamA, aWin)}${sa}</div>
-            <div class="bk-row">${tokenSlot(r.teamB, bWin)}${sb}</div>
+            <div class="bk-row">${tokenSlot(r.teamA, aWin)}</div>
+            <div class="bk-row">${tokenSlot(r.teamB, bWin)}${rowBadgeB}</div>
+            ${refRow}
           </div>
-          <div class="bk-action">${action}</div>
+          ${sidePanel}
         </div>`;
     }).join("");
 

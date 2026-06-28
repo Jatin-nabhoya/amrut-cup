@@ -55,6 +55,19 @@ function vMatches() {
       ? `<button class="btn btn-sm" data-act="editScore" data-id="${m.id}">${ic("pencil", 13)} Edit</button>`
       : `<button class="btn btn-accent btn-sm" data-act="saveScore" data-id="${m.id}">${ic("check", 14)} Save</button>`;
 
+    const assignedRef  = S.matchRefs[m.id];
+    const eligibleRefs = S.referees.filter(r => r.teamId !== m.teamA && r.teamId !== m.teamB);
+    const refSection   = S.referees.length ? `
+      <div class="m-ref">
+        <span class="m-ref-lbl">Referee</span>
+        ${m.done
+          ? `<span class="m-ref-name">${assignedRef ? esc((S.referees.find(r => r.id === assignedRef) || {}).name || "—") : "—"}</span>`
+          : `<select class="inp" style="padding:4px 8px;height:auto;font-size:12.5px;flex:1" data-ref="day1" data-id="${m.id}">
+               <option value="">— No referee —</option>
+               ${eligibleRefs.map(r => `<option value="${r.id}" ${assignedRef === r.id ? "selected" : ""}>${esc(r.name)}</option>`).join("")}
+             </select>`}
+      </div>` : "";
+
     return `
       <div class="match ${m.done ? "done" : ""}">
         <div class="m-slot">
@@ -69,6 +82,7 @@ function vMatches() {
           <span class="m-team right ${m.done ? (bWin || draw ? "win" : "lose") : ""}">${esc(tn[m.teamB])}${bWin ? ic("crown", 14, "var(--teal)") : ""}</span>
         </div>
         ${action}
+        ${refSection}
       </div>`;
   }).join("");
 

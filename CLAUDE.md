@@ -1,3 +1,4 @@
+
 # CLAUDE.md — Volleyball Tournament Manager ("Court Control")
 
 Guidance for working on this project. Read this before editing.
@@ -13,10 +14,10 @@ It has an **admin dashboard** (set up the tournament, enter scores) and a separa
 
 ## Deliverables (both in this folder)
 
-| File | What it is | Status |
-|------|------------|--------|
+| File                           | What it is                                                                                                                                                                                 | Status                                   |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
 | `volleyball-tournament.html` | **Primary deliverable.** Single self-contained file, no build step, no framework runtime. Opens directly in a browser (incl. `file://`), works offline, saves to `localStorage`. | Canonical — this is what the user runs. |
-| `volleyball-tournament.jsx` | A React + Tailwind implementation (Claude Artifact). Source of the shared **logic** and the **base stylesheet**. | Parallel version. |
+| `volleyball-tournament.jsx`  | A React + Tailwind implementation (Claude Artifact). Source of the shared**logic** and the **base stylesheet**.                                                                | Parallel version.                        |
 
 The HTML file and the JSX file share the **same pure logic** (scheduler, standings, bracket engine) and the **same base CSS**. When you change a logic function or a core style, change it in **both** so they don't drift.
 
@@ -53,15 +54,18 @@ The HTML file and the JSX file share the **same pure logic** (scheduler, standin
 ```
 
 ### Rendering model (vanilla, no framework)
+
 - A single state object `S = { tab, config, teams, matches, bracket, bracketResults, ui }`.
 - `render()` builds an **HTML string** and assigns `app.innerHTML`, then **delegated** listeners on `#app` (attached once in `init`) dispatch by data-attributes: `data-act`, `data-ui`, `data-cfg`, `data-draft`, `data-filter`, `data-dv`.
 - **Critical focus pattern:** text inputs update `S` on the `input` event **without re-rendering** (to preserve caret/focus). Only structural actions (button clicks, tab switches, saving a score, changing a filter) call `render()`. If you add an input that re-renders on every keystroke, it will lose focus — don't.
 - Icons are inline SVG via `ic(name, size, color)` backed by the `ICONS` map. Add new glyphs there.
 
 ### Admin tabs
+
 `overview`, `setup`, `teams`, `matches`, `standings`, `day2` — rendered by `vOverview / vSetup / vTeams / vMatches / vStandings / vDay2`.
 
 ### Viewer / display mode
+
 - Entered when `location.hash === "#display"`; `init()` branches to `initDisplay()` and adds `body.display-mode`.
 - **Auto-switches by stage:** if `S.bracket` exists → Day 2 layout, else → Day 1 layout. No manual toggle.
 - **Live sync:** re-renders on the `storage` event (fires in this window when the admin window writes) plus a 1s polling fallback. To avoid flicker/scroll-reset on the bracket, Day 2 only fully re-renders when a data **signature** (`dataSig()`) changes; otherwise just the clock ticks.
@@ -71,6 +75,7 @@ The HTML file and the JSX file share the **same pure logic** (scheduler, standin
 All framework-agnostic and unit-testable. Defined in the logic section.
 
 ### Scheduling — `buildSchedule(teams, courts, blockSize)` + `allocateCourts(...)`
+
 - Round-robin per group via `roundRobinRounds` (circle method).
 - **Court allocation minimizes team movement:**
   - Groups ≤ courts → each group gets its own **private block** of courts (spare courts shared out evenly); no group shares a court with another.
@@ -79,12 +84,14 @@ All framework-agnostic and unit-testable. Defined in the logic section.
 - A known, accepted trade-off: a group can only play as many simultaneous matches as it has pairs per round, so some courts may sit idle for small groups.
 
 ### Standings — `computeStats(...)` + `rankTeams(...)`
+
 - Win = `winPoints` (default 2), Draw = `drawPoints` (default 1), Loss = 0. Draws are allowed (a timed game can end level).
 - **Tiebreaker order is product-critical and must stay:**
   `games won → points → point difference → head-to-head → points-for → name`.
 - **Head-to-head is computed only among teams that are otherwise fully tied** (equal W, Pts, PD), as a mini-table of just their matches. Do not apply H2H across non-tied teams.
 
 ### Double elimination — `buildBracket(seedIds)` + `resolveBracket(struct, results)`
+
 - Seeds = Day 1 league order (`rankTeams`). Padded to the next power of two with **byes for the top seeds**.
 - Winners bracket + losers bracket (alternating minor/major rounds; WB losers drop in with a reversal to delay rematches) + grand final + **bracket reset** (if the losers' champion wins the first final).
 - `buildBracket` produces a **static structure** of match nodes with source pointers (`a`/`b` = `{kind:'seed'|'win'|'lose', …}`) plus a `stage` and `stageLabel` per match. Stages **interleave winners/losers brackets** so teams aren't scheduled back-to-back.
@@ -124,5 +131,6 @@ These caught real bugs before (single-court scheduling, the 2-team bracket stall
 - **Referee, live in-progress score, and a real match timer are not in the data model yet.** The viewer infers "live" from the current slot/stage and shows `—` placeholders for referee. If these become real, add them to the `match` objects and the admin side first, then surface them in the viewer.
 
 ## Roadmap / known follow-ups
+
 - Day 2 viewer is being upgraded to a full bracket layout (winners/losers columns with connectors, grand-final hero, side info panel). Those edits are staged but not yet assembled into the shipped `.html`.
 - Possible future work discussed: upper/lower split into two brackets + trophies; referee assignment with conflict checks; fixed Day 2 clock-time scheduling.

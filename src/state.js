@@ -7,12 +7,16 @@ var S = {
   matches: [],
   bracket: null,
   bracketResults: {},
-  ui: { newName: "", newGroup: "Group A", bulk: "", autoN: 2, fGroup: "all", fStatus: "all", drafts: {}, d2drafts: {} }
+  referees: [],
+  matchRefs: {},
+  d2Refs: {},
+  ui: { newName: "", newGroup: "Group A", bulk: "", autoN: 2, fGroup: "all", fStatus: "all", drafts: {}, d2drafts: {}, newRefName: "", newRefTeam: "" }
 };
 function persist() {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify({
-      config: S.config, teams: S.teams, matches: S.matches, bracket: S.bracket, bracketResults: S.bracketResults
+      config: S.config, teams: S.teams, matches: S.matches, bracket: S.bracket, bracketResults: S.bracketResults,
+      referees: S.referees, matchRefs: S.matchRefs, d2Refs: S.d2Refs
     }));
   } catch (e) { /* private mode / file restrictions: in-memory only */ }
 }
@@ -26,6 +30,9 @@ function loadState() {
       if (d.matches) S.matches = d.matches;
       if (d.bracket) S.bracket = d.bracket;
       if (d.bracketResults) S.bracketResults = d.bracketResults;
+      if (d.referees)  S.referees  = d.referees;
+      if (d.matchRefs) S.matchRefs = d.matchRefs;
+      if (d.d2Refs)    S.d2Refs    = d.d2Refs;
     }
   } catch (e) {}
 }

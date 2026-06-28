@@ -46,7 +46,7 @@ function render() {
       <aside class="rail"><div class="rail-inner">
         <div class="brand">
           <div class="brand-mark">${logo}</div>
-          <div><div class="brand-name">Court Control</div><div class="brand-sub">Tournament Admin</div></div>
+          <div><div class="brand-name">Amrut Cup 2026</div><div class="brand-sub">Tournament Admin</div></div>
         </div>
         <nav class="nav">${nav}</nav>
         <div class="rail-foot">
@@ -90,10 +90,12 @@ function onClick(e) {
     case "generate":    generate();             break;
     case "saveScore":   saveResult(id);         break;
     case "editScore":   editResult(id);         break;
-    case "genBracket":  generateBracket();      break;
-    case "saveD2":      saveBracketResult(id);  break;
-    case "editD2":      editBracketResult(id);  break;
-    case "template":    downloadTemplate();     break;
+    case "genBracket":    generateBracket();      break;
+    case "saveD2":        saveBracketResult(id);  break;
+    case "editD2":        editBracketResult(id);  break;
+    case "addReferee":    addReferee();           break;
+    case "removeReferee": removeReferee(id);      break;
+    case "template":      downloadTemplate();     break;
     case "export":      exportData();           break;
     case "import":      document.getElementById("fileInput").click(); break;
     case "reset":       resetAll();             break;
@@ -133,6 +135,13 @@ function onInput(e) {
 function onChange(e) {
   const t = e.target;
   if (t.id === "fileInput" && t.files && t.files[0]) { importFile(t.files[0]); t.value = ""; return; }
+  if (t.hasAttribute("data-ui")) { S.ui[t.getAttribute("data-ui")] = t.value; return; }
+  if (t.hasAttribute("data-ref")) {
+    const mid = t.getAttribute("data-id");
+    if (t.getAttribute("data-ref") === "day1") saveMatchRef(mid, t.value);
+    else saveD2Ref(mid, t.value);
+    return;
+  }
   if (t.hasAttribute("data-filter")) {
     const k = t.getAttribute("data-filter");
     if (k === "group") S.ui.fGroup = t.value; else S.ui.fStatus = t.value;

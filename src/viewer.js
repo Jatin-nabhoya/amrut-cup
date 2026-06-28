@@ -11,12 +11,14 @@ function dvRowResult(x) {
   return `<div class="dv-row"><span class="dv-court">Ct ${x.court}</span>
     <span class="dv-team ${aw ? "w" : ""}">${esc(x.aName)}</span>
     <span class="dv-score num">${x.sa}<span class="dv-sep">:</span>${x.sb}</span>
-    <span class="dv-team r ${bw ? "w" : ""}">${esc(x.bName)}</span></div>`;
+    <span class="dv-team r ${bw ? "w" : ""}">${esc(x.bName)}</span>
+    ${x.ref ? `<span class="dv-ref">${esc(x.ref)}</span>` : ""}</div>`;
 }
 function dvRowUp(x) {
   return `<div class="dv-row"><span class="dv-court">Ct ${x.court}</span>
     <span class="dv-up-teams">${esc(x.aName)} <span class="dv-vs">vs</span> ${esc(x.bName)}</span>
-    <span class="dv-when num">${esc(x.when || x.label || "")}</span></div>`;
+    <span class="dv-when num">${esc(x.when || x.label || "")}</span>
+    ${x.ref ? `<span class="dv-ref">${esc(x.ref)}</span>` : ""}</div>`;
 }
 const dvEmpty = (t) => `<div class="dv-empty">${esc(t)}</div>`;
 
@@ -80,6 +82,9 @@ function renderBracketDisplay() {
     else if (isLive) badge = `<span class="dvb-badge dvb-b-live"><i class="dvb-dot"></i>LIVE</span>`;
     else             badge = `<span class="dvb-badge dvb-b-wait">Upcoming</span>`;
 
+    const refId   = S.d2Refs[m.id];
+    const refName = refId ? (S.referees.find(r => r.id === refId) || {}).name : null;
+
     const cls = [
       "dvb-card",
       m.bracket === "GF" ? "dvb-gf-card" : "",
@@ -98,6 +103,7 @@ function renderBracketDisplay() {
         ${teamRow(r.teamA, aWin, r.sa)}
         ${teamRow(r.teamB, bWin, r.sb)}
       </div>
+      ${refName ? `<div class="dvb-ref"><span class="dvb-ref-lbl">Ref</span><span class="dvb-ref-nm">${esc(refName)}</span></div>` : ""}
     </div>`;
   };
 
@@ -230,7 +236,8 @@ function renderDisplay() {
     bName: tn[m.teamB],
     sa: m.scoreA,
     sb: m.scoreB,
-    done: m.done
+    done: m.done,
+    ref: S.matchRefs[m.id] ? (S.referees.find(r => r.id === S.matchRefs[m.id]) || {}).name || null : null
   }));
   results  = list.filter(x => x.done).sort((a, b) => b.slot - a.slot).slice(0, 7);
   upcoming = list.filter(x => !x.done).sort((a, b) => a.slot - b.slot).slice(0, 7);

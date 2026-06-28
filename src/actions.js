@@ -38,7 +38,40 @@ function autoAssign() {
   S.teams = S.teams.map((t, i) => ({ ...t, group: labels[i % n] }));
   rerender();
 }
-function removeTeam(id) { S.teams = S.teams.filter(t => t.id !== id); rerender(); }
+function removeTeam(id) {
+  const removedRefIds = S.referees.filter(r => r.teamId === id).map(r => r.id);
+  S.teams = S.teams.filter(t => t.id !== id);
+  S.referees = S.referees.filter(r => r.teamId !== id);
+  removedRefIds.forEach(rid => {
+    Object.keys(S.matchRefs).forEach(k => { if (S.matchRefs[k] === rid) delete S.matchRefs[k]; });
+    Object.keys(S.d2Refs).forEach(k => { if (S.d2Refs[k] === rid) delete S.d2Refs[k]; });
+  });
+  rerender();
+}
+
+/* ---- Referee pool ---- */
+function addReferee() {
+  const name = S.ui.newRefName.trim();
+  if (!name) return;
+  S.referees.push({ id: uid(), name, teamId: S.ui.newRefTeam || "" });
+  S.ui.newRefName = "";
+  S.ui.newRefTeam = "";
+  rerender();
+}
+function removeReferee(id) {
+  S.referees = S.referees.filter(r => r.id !== id);
+  Object.keys(S.matchRefs).forEach(k => { if (S.matchRefs[k] === id) delete S.matchRefs[k]; });
+  Object.keys(S.d2Refs).forEach(k => { if (S.d2Refs[k] === id) delete S.d2Refs[k]; });
+  rerender();
+}
+function saveMatchRef(matchId, refId) {
+  if (refId) S.matchRefs[matchId] = refId; else delete S.matchRefs[matchId];
+  rerender();
+}
+function saveD2Ref(matchId, refId) {
+  if (refId) S.d2Refs[matchId] = refId; else delete S.d2Refs[matchId];
+  rerender();
+}
 
 function generate() {
   if (S.teams.length < 2) return;
@@ -122,7 +155,7 @@ function downloadBlob(blob, name) {
 }
 function exportData() {
   downloadBlob(
-    new Blob([JSON.stringify({ config: S.config, teams: S.teams, matches: S.matches, bracket: S.bracket, bracketResults: S.bracketResults }, null, 2)], { type: "application/json" }),
+    new Blob([JSON.stringify({ config: S.config, teams: S.teams, matches: S.matches, bracket: S.bracket, bracketResults: S.bracketResults, referees: S.referees, matchRefs: S.matchRefs, d2Refs: S.d2Refs }, null, 2)], { type: "application/json" }),
     (S.config.name || "tournament").replace(/\s+/g, "_") + "_tournament.json"
   );
 }
@@ -150,6 +183,9 @@ function importFile(file) {
           if (d.matches) S.matches = d.matches;
           if (d.bracket !== undefined) S.bracket = d.bracket;
           if (d.bracketResults) S.bracketResults = d.bracketResults;
+          if (d.referees)  S.referees  = d.referees;
+          if (d.matchRefs) S.matchRefs = d.matchRefs;
+          if (d.d2Refs)    S.d2Refs    = d.d2Refs;
           rerender();
         } else {
           parseBulk(reader.result);
@@ -162,6 +198,7 @@ function importFile(file) {
 function resetAll() {
   if (!confirm("Clear everything and start a new tournament? This can't be undone.")) return;
   S.config = { ...DEFAULT_CONFIG }; S.teams = []; S.matches = []; S.bracket = null; S.bracketResults = {};
+  S.referees = []; S.matchRefs = {}; S.d2Refs = {};
   S.ui.drafts = {}; S.ui.d2drafts = {};
   rerender();
 }

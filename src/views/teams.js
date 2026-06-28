@@ -37,6 +37,34 @@ function vTeams() {
           </div>
         </div>
       </div>
+      <div class="card">
+        <div class="card-h">${ic("shield", 16, "var(--teal)")}<h2>Referee Pool</h2>
+          <span class="sub">${S.referees.length} referee${S.referees.length !== 1 ? "s" : ""}</span>
+        </div>
+        <div class="card-b" style="display:flex;flex-direction:column;gap:10px">
+          <div class="flex gap8 wrap">
+            <input class="inp" style="flex:1;min-width:120px" placeholder="Player name"
+                   data-ui="newRefName" value="${esc(S.ui.newRefName)}">
+            <select class="inp" style="min-width:110px" data-ui="newRefTeam">
+              <option value="">— Team —</option>
+              ${S.teams.map(t => `<option value="${t.id}" ${S.ui.newRefTeam === t.id ? "selected" : ""}>${esc(t.name)}</option>`).join("")}
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" data-act="addReferee">${ic("plus", 13)} Add Referee</button>
+          ${S.referees.length ? `
+          <div class="ref-list">
+            ${S.referees.map(r => {
+              const team = S.teams.find(t => t.id === r.teamId);
+              return `<div class="ref-row">
+                <span class="ref-dot"></span>
+                <span class="ref-name">${esc(r.name)}</span>
+                ${team ? `<span class="pill pill-grey" style="font-size:11px">${esc(team.name)}</span>` : ""}
+                <button class="btn-icon" data-act="removeReferee" data-id="${r.id}" title="Remove">${ic("x", 13)}</button>
+              </div>`;
+            }).join("")}
+          </div>` : `<p class="muted" style="font-size:12.5px;margin:0">No referees yet — add player names above.</p>`}
+        </div>
+      </div>
     </div>`;
 
   let listHtml;
